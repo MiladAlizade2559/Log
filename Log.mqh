@@ -19,6 +19,9 @@ class CLog
 private:
     CFileTXT         m_file;     // object CFileTXT for saving logs in file
     bool             m_saved;    // is saved logs to log file
+protected:
+    //--- Function for converting information to log tree
+    string           LogTree(const string &headers[], const string &values[]);
 public:
                      CLog(void);
                     ~CLog(void);
@@ -62,5 +65,53 @@ void CLog::Close(void)
     if(m_saved)
         //--- close log file
         m_file.Close();
+   }
+//+------------------------------------------------------------------+
+//| Converting information to log tree                               |
+//+------------------------------------------------------------------+
+string CLog::LogTree(const string &headers[], const string &values[])
+   {
+//--- created variables
+    int len_header = 0;
+    int len = 0;
+    string log_value = "";
+    string value = "";
+    string sps = "";
+    string header = "";
+//--- get max lenght header in headers and set to len_header
+    for(int i = 0; i < ArraySize(headers); i++)
+       {
+        len = StringLen(headers[i]);
+        if(len > len_header)
+            len_header = len;
+       }
+//--- completing headers to values
+//--- header ==> value
+    for(int i = 0; i < ArraySize(headers); i++)
+       {
+        //--- sorting header to one column
+        len = StringLen(headers[i]);
+        sps = "";
+        StringInit(sps,len_header - len,' ');
+        header = StringFormat("%s%s ==> ",headers[i],sps);
+        //--- sorting value to one column
+        string results[];
+        StringSplit(values[i],'\n',results);
+        value = "";
+        //--- checking not null results array
+        if(ArraySize(results) > 0)
+           {
+            for(int res = 0; res < ArraySize(results) - 1; res++)
+               {
+                sps = "";
+                StringInit(sps,len_header + 5,' ');
+                value += StringFormat("%s\n%s",results[res],sps);
+               }
+            value += results[ArraySize(results) - 1];
+           }
+        //--- adding header and value to log_value
+        log_value += StringFormat("%s%s\n",header,value);
+       }
+    return(log_value);
    }
 //+------------------------------------------------------------------+
